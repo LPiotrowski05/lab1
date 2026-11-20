@@ -1,0 +1,17 @@
+﻿@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<h2>Dashboard</h2>
+<p>Liczba obsłużonych żądań od startu aplikacji: <strong>@Model.Total</strong></p>
+
+<h4>5 najpopularniejszych ścieżek</h4>
+<table class="table table-sm">
+    <thead><tr><th>Ścieżka</th><th>Żądania</th></tr></thead>
+    <tbody>
+    @foreach (var p in Model.TopPaths)
+    {
+        <tr><td>@p.Key</td><td>@p.Value</td></tr>
+    }
+    </tbody>
+</table>

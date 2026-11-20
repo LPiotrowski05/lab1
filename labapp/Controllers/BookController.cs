@@ -1,12 +1,15 @@
 ﻿using System.Text;
+using labapp.Filters;
 using labapp.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace labapp.Controllers;
 
+[ServiceFilter(typeof(LogActionFilter), Order = 1)]
+[SecondLog(Order = 2)]
+[MeasureTime]
 public class BookController : Controller
 {
-
     public IActionResult Index() => View(BookStoreMemory.Books);
 
     [HttpGet]
@@ -32,16 +35,31 @@ public class BookController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    public IActionResult ByYear(int year) =>
+        View("Index", BookStoreMemory.Books.Where(b => b.PublicationDate?.Year == year).ToList());
+
+    public IActionResult ByIsbn(string isbn)
+    {
+        var book = BookStoreMemory.Books
+            .FirstOrDefault(b => b.Isbn.Replace("-", "").Replace(" ", "") == isbn);
+        if (book is null) return NotFound();
+        return RedirectToAction(nameof(Details), new { id = book.Id });
+    }
+
+    public IActionResult Archive(int year, int month) =>
+        View("Index", BookStoreMemory.Books.Where(b => b.PublicationDate?.Year == year).ToList());
+
+    [HttpGet("Book/Details/{id:int}")]
+    public IActionResult Details(int id)
+    {
+        var book = BookStoreMemory.Books.FirstOrDefault(b => b.Id == id);
+        if (book is null) return NotFound();
+        return View(book);
+    }
 
     public IActionResult Hello() => Content("Witaj w BookStore!", "text/plain; charset=utf-8");
 
     public IActionResult Status(int code = 200) => StatusCode(code);
-
-    public IActionResult Details(int id)
-    {
-        ViewBag.Id = id;
-        return View();
-    }
 
     public IActionResult Echo([FromQuery] string name = "nieznajomy", [FromQuery] int count = 1) =>
         Content(string.Join("\n", Enumerable.Repeat($"Cześć, {name}!", Math.Clamp(count, 1, 20))));
@@ -61,7 +79,11 @@ public class BookController : Controller
         return Content(sb.ToString(), "text/plain; charset=utf-8");
     }
 
-    public IActionResult Sum(int a, int b) => Content((a + b).ToString());
+    public IActionResult Sum(int a, int b)
+    {
+        if (!ModelState.IsValid) return BadRequest(ModelState);
+        return Content((a + b).ToString());
+    }
 
     public IActionResult UserAgent() => Content(Request.Headers.UserAgent.ToString());
 

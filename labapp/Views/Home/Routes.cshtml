@@ -1,0 +1,14 @@
+﻿@model List<RouteRow>
+@{
+    ViewData["Title"] = "Trasy";
+}
+<h2>Adresy aplikacji</h2>
+<table class="table table-sm">
+    <thead><tr><th>Adres</th><th>Kontroler.akcja</th><th>Metoda HTTP</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+        <tr><td>@r.Url</td><td>@r.Action</td><td>@r.Method</td></tr>
+    }
+    </tbody>
+</table>
